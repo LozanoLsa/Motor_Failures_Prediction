@@ -1,0 +1,142 @@
+PROJECT: Motor_Failures_Prediction
+TITLE: Data Sources & Feature Engineering
+
+--------------------------------------------------
+OVERVIEW:
+This dataset integrates condition monitoring variables from industrial equipment, combining vibration, thermal, electrical, and load-related data.
+
+The objective is to detect early signs of motor failure and enable predictive maintenance strategies.
+
+--------------------------------------------------
+DATA SOURCES AND VARIABLE ORIGIN:
+
+1. VIBRATION MONITORING SYSTEM
+Variables:
+- vib_rms_mms
+- vib_peak_to_peak_mms
+
+Taken from:
+Vibration sensors mounted on motor housings and bearing locations.
+
+Reason:
+Vibration is one of the earliest indicators of mechanical issues such as imbalance, misalignment, or bearing wear.
+
+--------------------------------------------------
+2. THERMAL MONITORING SYSTEM
+Variables:
+- bearing_temp_c
+
+Taken from:
+Temperature sensors installed near bearings.
+
+Reason:
+Elevated temperature indicates friction, lubrication issues, or early degradation of components.
+
+--------------------------------------------------
+3. ELECTRICAL MONITORING SYSTEM
+Variables:
+- motor_current_a
+- dominant_freq_hz
+
+Taken from:
+Motor current sensors and signal frequency analysis.
+
+Reason:
+Changes in electrical behavior can indicate load variation, internal faults, or abnormal operating conditions.
+
+--------------------------------------------------
+4. OPERATING CONDITIONS
+Variables:
+- load_pct
+
+Taken from:
+Machine load monitoring systems or production control signals.
+
+Reason:
+Higher loads increase stress on the motor and accelerate wear mechanisms.
+
+--------------------------------------------------
+5. TARGET VARIABLE (MAINTENANCE / FAILURE RECORDS)
+Variables:
+- incipient_failure
+
+Taken from:
+Maintenance logs and condition-based failure identification records.
+
+Reason:
+Indicates whether the motor is showing early-stage failure conditions. Used as the classification target.
+
+--------------------------------------------------
+VARIABLE-BY-VARIABLE SUMMARY:
+
+vib_rms_mms
+Taken from:
+Vibration sensors
+Why it was included:
+Measures overall vibration energy, useful for detecting general mechanical degradation.
+
+vib_peak_to_peak_mms
+Taken from:
+Vibration sensors
+Why it was included:
+Captures extreme vibration amplitudes, useful for detecting shocks or localized faults.
+
+bearing_temp_c
+Taken from:
+Temperature sensors
+Why it was included:
+Detects overheating conditions associated with friction or lubrication failure.
+
+motor_current_a
+Taken from:
+Electrical monitoring
+Why it was included:
+Reflects load behavior and electrical anomalies.
+
+dominant_freq_hz
+Taken from:
+Frequency analysis of signals
+Why it was included:
+Identifies changes in vibration or electrical frequency patterns linked to faults.
+
+load_pct
+Taken from:
+Machine operation system
+Why it was included:
+Represents stress level on the equipment.
+
+incipient_failure
+Taken from:
+Maintenance and diagnostic records
+Why it was included:
+Defines early-stage failure condition for predictive modeling.
+
+--------------------------------------------------
+FEATURE ENGINEERING LOGIC:
+
+The dataset combines mechanical, thermal, and electrical signals to provide a comprehensive view of equipment condition.
+
+Each variable contributes to detecting different failure modes, improving model robustness.
+
+--------------------------------------------------
+BUSINESS LOGIC:
+
+Motor failures are not random.
+
+They are preceded by measurable changes in vibration, temperature, electrical behavior, and load conditions.
+
+By capturing these signals, it is possible to detect failures before they occur.
+
+--------------------------------------------------
+GOAL:
+
+Predict early failure conditions to:
+- Reduce unplanned downtime
+- Improve MTBF (Mean Time Between Failures)
+- Optimize maintenance scheduling
+- Reduce maintenance costs
+
+--------------------------------------------------
+NOTE:
+
+Data originates from industrial condition monitoring systems, integrating sensor data and maintenance records from real equipment operation.
