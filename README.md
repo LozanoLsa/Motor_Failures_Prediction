@@ -18,7 +18,7 @@ The shift from **reactive to predictive maintenance** doesn't require exotic tec
 
 ## 📊 Dataset
 
-- **1,500 motor operating records** from a simulated condition monitoring system
+- **1,500 motor operating records** from a condition monitoring system
 - **Target:** `incipient_failure` (binary) — 0 = normal operation, 1 = incipient failure state
 - **Class balance:** 33.3% incipient failure (realistic monitoring scenario)
 - **Source:** Simulated sensor data modeling two distinct motor operating regimes
