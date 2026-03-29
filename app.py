@@ -58,7 +58,7 @@ def load_data():
     try:
         return pd.read_csv(DATA_PATH)
     except FileNotFoundError:
-        return pd.read_csv("https://raw.githubusercontent.com/LozanoLsa/03-KNN-Motor-Failure/main/motor_failure_prediction_data.csv")
+        return pd.read_csv("https://raw.githubusercontent.com/LozanoLsa/Motor_Failures_Prediction/main/motor_failure_prediction_data.csv")
 
 
 @st.cache_resource
