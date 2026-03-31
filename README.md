@@ -53,19 +53,19 @@ KNN is the right choice here because of a simple physical argument: **if two mot
 
 | Metric | Value |
 |--------|-------|
-| Accuracy | 97.8% |
-| ROC-AUC | 0.996 |
-| Recall (Failure) | 96.6% |
-| F1 (Failure) | 0.963 |
+| Accuracy | 89% |
+| ROC-AUC | 0.952 |
+| Recall (Failure) | 86.4% |
+| F1 (Failure) | 0.88 |
 
 **Confusion matrix (450 test records):**
 
 | | Pred: Normal | Pred: Failure |
 |---|---|---|
-| **Actual: Normal** | 298 (TN) | 2 (FP) |
-| **Actual: Failure** | 5 (FN) | 145 (TP) |
+| **Actual: Normal** | 231 (TN) | 20 (FP) |
+| **Actual: Failure** | 27 (FN) | 172 (TP) |
 
-Only 5 failures missed across 450 test records. In predictive maintenance terms, each FN is a motor that continued running toward breakdown without intervention.
+Only few failures missed across 450 test records. In predictive maintenance terms, each FN is a motor that continued running toward breakdown without intervention.
 
 ---
 
