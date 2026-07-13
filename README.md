@@ -18,9 +18,9 @@ The shift from **reactive to predictive maintenance** doesn't require exotic tec
 
 ## 📊 Dataset
 
-- **1,500 motor operating records** from a condition monitoring system
+- **1,847 motor operating records** from a condition monitoring system
 - **Target:** `incipient_failure` (binary) — 0 = normal operation, 1 = incipient failure state
-- **Class balance:** 33.3% incipient failure (realistic monitoring scenario)
+- **Class balance:** 29.0% incipient failure — reflecting typical monitoring coverage where failure states are captured during scheduled condition assessments, not continuous fault logging
 - **Source:** Simulated sensor data modeling two distinct motor operating regimes
 
 | Signal | Normal Range | Failure Range | Physical Meaning |
@@ -45,7 +45,7 @@ KNN is the right choice here because of a simple physical argument: **if two mot
 **Why KNN specifically requires StandardScaler:** A feature in Amperes (range 25–40) would dominate distance calculations over one in mm/s (range 1–6) without normalization. Scaling isn't optional — it's what makes the distance metric physically meaningful.
 
 **Preprocessing:** StandardScaler on all features, wrapped in a Pipeline.  
-**Tuning:** GridSearchCV over k × weights × distance metric — best: `k=5`, `weights='distance'`, `p=1` (Manhattan).
+**Tuning:** GridSearchCV over k × weights × distance metric — best: `k=7`, `weights='distance'`, `p=1` (Manhattan).
 
 ---
 
@@ -53,19 +53,20 @@ KNN is the right choice here because of a simple physical argument: **if two mot
 
 | Metric | Value |
 |--------|-------|
-| Accuracy | 89% |
-| ROC-AUC | 0.952 |
-| Recall (Failure) | 86.4% |
-| F1 (Failure) | 0.88 |
+| Accuracy | 88.3% |
+| ROC-AUC | 0.940 |
+| Recall (Failure) | 71.4% |
+| F1 (Failure) | 0.780 |
+| Precision (Failure) | 0.858 |
 
-**Confusion matrix (450 test records):**
+**Confusion matrix (555 test records):**
 
 | | Pred: Normal | Pred: Failure |
 |---|---|---|
-| **Actual: Normal** | 231 (TN) | 20 (FP) |
-| **Actual: Failure** | 27 (FN) | 172 (TP) |
+| **Actual: Normal** | 375 (TN) | 19 (FP) |
+| **Actual: Failure** | 46 (FN) | 115 (TP) |
 
-Only few failures missed across 450 test records. In predictive maintenance terms, each FN is a motor that continued running toward breakdown without intervention.
+46 failures missed across 555 test records. Post-analysis of these false negatives reveals a consistent pattern: motors running at 85–90% load with moderate vibration elevation (3.0–3.5 mm/s) — a zone where thermal signals become ambiguous because high-load motors run naturally warmer, regardless of mechanical condition. In production, this zone would be flagged for increased monitoring frequency rather than binary classification.
 
 ---
 
@@ -73,14 +74,14 @@ Only few failures missed across 450 test records. In predictive maintenance term
 
 | Feature | Accuracy Drop | Role |
 |---------|--------------|------|
-| `vib_rms_mms` | Δ −8.2% | Primary alarm signal |
-| `vib_peak_to_peak_mms` | Δ −6.1% | Impact event detector |
-| `bearing_temp_c` | Δ −3.9% | Thermal confirmation |
-| `motor_current_a` | Δ −1.4% | Electrical context |
-| `dominant_freq_hz` | Δ −0.6% | Misalignment type |
-| `load_pct` | Δ −0.1% | Operating context |
+| `vib_rms_mms` | Δ −1.3% | Primary alarm signal |
+| `vib_peak_to_peak_mms` | Δ −0.7% | Impact event detector |
+| `load_pct` | Δ −0.2% | Operating context |
+| `motor_current_a` | Δ −0.1% | Electrical context |
+| `dominant_freq_hz` | Δ −0.0% | Misalignment type |
+| `bearing_temp_c` | Δ +0.1% | Thermal — ambiguous under high load |
 
-Vibration RMS dominates — a near-doubling from 2.2 to 4.3 mm/s represents a shift well above ISO 10816 alarm thresholds for machinery in this class.
+Vibration RMS remains the leading signal — elevation from ~2.2 to ~4.3 mm/s reflects a shift beyond ISO 10816 alarm thresholds. Bearing temperature, however, shows near-zero permutation importance: at load levels above 85%, motors run consistently warmer regardless of mechanical state, reducing its discriminative value in this dataset.
 
 ---
 
@@ -89,7 +90,7 @@ Vibration RMS dominates — a near-doubling from 2.2 to 4.3 mm/s represents a sh
 ```
 Motor_Failures_Prediction/
 ├── 03_KNN_Motor_Failure_Prediction.ipynb  # Notebook (no outputs)
-├── motor_failure_prediction_data.csv      # Complete dataset (1,500 records)
+├── motor_failure_prediction_data.csv      # Complete dataset (1,847 records)
 ├── app.py                                 # Motor condition simulator
 ├── README.md
 └── requirements.txt
@@ -122,7 +123,7 @@ python app.py
 2. **Permutation importance works on any model** — KNN has no coefficients, but shuffling features and measuring accuracy drop gives model-agnostic interpretability that stakeholders can understand.
 3. **StandardScaler is not optional for KNN** — without it, the distance metric is dominated by whichever feature has the largest absolute range. Scale before you measure.
 4. **GridSearchCV on distance metric matters** — Manhattan distance (p=1) outperformed Euclidean (p=2) here, consistent with sensor data that often contains outliers where L1 is more robust.
-5. **High AUC on physical data is expected, not suspicious** — when two operating states are physically distinct (2.2 vs 4.3 mm/s vibration), a good model should find that boundary easily. The value is in the deployment, not the benchmark.
+5. **The 46 missed failures tell the real story** — motors running near threshold (85–90% load, moderate vibration) occupy a zone where the sensor profile is genuinely ambiguous. A model that claims to catch 100% of failures on industrial sensor data is not a better model — it's a cleaner dataset. In practice, these borderline cases would escalate to increased sampling frequency, not binary classification.
 
 ---
 

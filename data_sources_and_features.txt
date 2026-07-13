@@ -1,142 +1,45 @@
-PROJECT: Motor_Failures_Prediction
+PROJECT: 03_KNN_SUP
 TITLE: Data Sources & Feature Engineering
 
 --------------------------------------------------
 OVERVIEW:
-This dataset integrates condition monitoring variables from industrial equipment, combining vibration, thermal, electrical, and load-related data.
-
-The objective is to detect early signs of motor failure and enable predictive maintenance strategies.
+This dataset contains 1,847 motor operating records from a condition monitoring system. The ML task is binary classification to detect incipient failure states (0 = normal operation, 1 = incipient failure), with a 29.0% incipient failure rate. Source: simulated sensor data modeling two distinct motor operating regimes based on ISO 10816 alarm thresholds.
 
 --------------------------------------------------
-DATA SOURCES AND VARIABLE ORIGIN:
+REAL-WORLD DATA SOURCES:
 
-1. VIBRATION MONITORING SYSTEM
-Variables:
-- vib_rms_mms
-- vib_peak_to_peak_mms
-
-Taken from:
-Vibration sensors mounted on motor housings and bearing locations.
-
-Reason:
-Vibration is one of the earliest indicators of mechanical issues such as imbalance, misalignment, or bearing wear.
-
---------------------------------------------------
-2. THERMAL MONITORING SYSTEM
-Variables:
-- bearing_temp_c
-
-Taken from:
-Temperature sensors installed near bearings.
-
-Reason:
-Elevated temperature indicates friction, lubrication issues, or early degradation of components.
+Feature                   | Source System              | Instrument
+--------------------------|----------------------------|--------------------------
+vib_rms_mms               | SCADA / Vibration Monitor  | Accelerometer — RMS amplitude at motor housing
+vib_peak_to_peak_mms      | SCADA / Vibration Monitor  | Accelerometer — peak-to-peak amplitude
+bearing_temp_c            | DCS / Thermal Monitor      | Thermocouple or PT100 at bearing housing
+motor_current_a           | PLC / Electrical Monitor   | Current transducer — motor phase current
+dominant_freq_hz          | SCADA / Frequency Analyzer | FFT spectrum analyzer — dominant vibration frequency
+load_pct                  | Machine Load Monitor       | Load cell or PLC set-point register — % of rated capacity
+incipient_failure         | Maintenance / Diagnostic Log | Condition assessment record per inspection cycle
 
 --------------------------------------------------
-3. ELECTRICAL MONITORING SYSTEM
-Variables:
-- motor_current_a
-- dominant_freq_hz
+VARIABLE DESCRIPTIONS:
 
-Taken from:
-Motor current sensors and signal frequency analysis.
-
-Reason:
-Changes in electrical behavior can indicate load variation, internal faults, or abnormal operating conditions.
-
---------------------------------------------------
-4. OPERATING CONDITIONS
-Variables:
-- load_pct
-
-Taken from:
-Machine load monitoring systems or production control signals.
-
-Reason:
-Higher loads increase stress on the motor and accelerate wear mechanisms.
+vib_rms_mms            - RMS vibration amplitude (mm/s); normal ~2.2, failure ~4.3. Primary alarm signal reflecting ISO 10816 alarm thresholds.
+vib_peak_to_peak_mms   - Peak-to-peak vibration (mm/s); normal ~5.0, failure ~9.0. Captures impact events and mechanical looseness.
+bearing_temp_c         - Bearing temperature (°C); normal ~60°C, failure ~82°C. Indicates friction buildup and lubrication degradation.
+motor_current_a        - Motor current draw (A); normal ~28A, failure ~35A. Reflects mechanical resistance increase.
+dominant_freq_hz       - Dominant frequency (Hz); normal ~29.5 Hz, failure ~24.5 Hz. Misalignment signature in vibration or electrical signal.
+load_pct               - Operating load as % of rated capacity; normal ~70%, failure ~85%. Operating context that modulates thermal signals.
+incipient_failure      - Binary classification target: 0 = normal operation, 1 = incipient failure state.
 
 --------------------------------------------------
-5. TARGET VARIABLE (MAINTENANCE / FAILURE RECORDS)
-Variables:
-- incipient_failure
+FEATURE ENGINEERING:
 
-Taken from:
-Maintenance logs and condition-based failure identification records.
-
-Reason:
-Indicates whether the motor is showing early-stage failure conditions. Used as the classification target.
+StandardScaler applied to all six features — mandatory for KNN because distance calculations require features on comparable scales. All preprocessing inside a sklearn Pipeline. GridSearchCV over k x weights x distance metric; best: k=7, weights='distance', p=1 (Manhattan). Train/Test split: 80/20, random_state=42.
 
 --------------------------------------------------
-VARIABLE-BY-VARIABLE SUMMARY:
+BUSINESS CONTEXT:
 
-vib_rms_mms
-Taken from:
-Vibration sensors
-Why it was included:
-Measures overall vibration energy, useful for detecting general mechanical degradation.
-
-vib_peak_to_peak_mms
-Taken from:
-Vibration sensors
-Why it was included:
-Captures extreme vibration amplitudes, useful for detecting shocks or localized faults.
-
-bearing_temp_c
-Taken from:
-Temperature sensors
-Why it was included:
-Detects overheating conditions associated with friction or lubrication failure.
-
-motor_current_a
-Taken from:
-Electrical monitoring
-Why it was included:
-Reflects load behavior and electrical anomalies.
-
-dominant_freq_hz
-Taken from:
-Frequency analysis of signals
-Why it was included:
-Identifies changes in vibration or electrical frequency patterns linked to faults.
-
-load_pct
-Taken from:
-Machine operation system
-Why it was included:
-Represents stress level on the equipment.
-
-incipient_failure
-Taken from:
-Maintenance and diagnostic records
-Why it was included:
-Defines early-stage failure condition for predictive modeling.
-
---------------------------------------------------
-FEATURE ENGINEERING LOGIC:
-
-The dataset combines mechanical, thermal, and electrical signals to provide a comprehensive view of equipment condition.
-
-Each variable contributes to detecting different failure modes, improving model robustness.
-
---------------------------------------------------
-BUSINESS LOGIC:
-
-Motor failures are not random.
-
-They are preceded by measurable changes in vibration, temperature, electrical behavior, and load conditions.
-
-By capturing these signals, it is possible to detect failures before they occur.
+Used by maintenance engineers in industrial operations monitoring electric motors on production lines, conveyor systems, HVAC, and pumps. The model enables the shift from reactive to predictive maintenance by detecting incipient failure states from sensor patterns measurable weeks before a motor trips a protection relay.
 
 --------------------------------------------------
 GOAL:
 
-Predict early failure conditions to:
-- Reduce unplanned downtime
-- Improve MTBF (Mean Time Between Failures)
-- Optimize maintenance scheduling
-- Reduce maintenance costs
-
---------------------------------------------------
-NOTE:
-
-Data originates from industrial condition monitoring systems, integrating sensor data and maintenance records from real equipment operation.
+Classify motor operating state as normal or incipient failure to enable predictive maintenance scheduling, reduce unplanned downtime, and improve MTBF. Model achieved Accuracy 88.3%, AUC-ROC 0.940, Recall (Failure) 71.4%.

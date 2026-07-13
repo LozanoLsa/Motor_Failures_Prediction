@@ -417,7 +417,7 @@ with st.sidebar:
                 color:#fff;margin-bottom:6px;">Motor Failure<br>Predictor</div>
     <div style="font-family:'JetBrains Mono',monospace;font-size:0.65rem;
                 color:#4e6a8a;line-height:1.7;margin-bottom:12px;">
-        KNN trained on 1,500 motor<br>condition records · 6 sensors
+        KNN trained on 1,847 motor<br>condition records · 6 sensors
     </div>
     """, unsafe_allow_html=True)
     st.divider()
@@ -463,8 +463,8 @@ st.markdown(f"""
     <div style="margin-top:10px;">
         <span class="lsa-chip">KNN</span>
         <span class="lsa-chip">6 Sensors</span>
-        <span class="lsa-chip">97.8% Accuracy</span>
-        <span class="lsa-chip">AUC 0.996</span>
+        <span class="lsa-chip">88.3% Accuracy</span>
+        <span class="lsa-chip">AUC 0.940</span>
         <span class="lsa-chip">GridSearchCV</span>
     </div>
 </div>
